@@ -8,10 +8,29 @@ var BALL_IMG = '<img src="ball.png" />';
 
 var gBoard;
 var gGamerPos;
+
+var gBallCount = 0;
+var gTotalBalls = 0;
+var isGameActive = true;
+
 function initGame() {
   gGamerPos = { i: 2, j: 9 };
   gBoard = buildBoard();
   renderBoard(gBoard);
+  gBallCount = 0;
+  gTotalBalls = countTotalBalls();
+  updateBallCountDisplay();
+  hideWinMessage();
+  isGameActive = true;
+}
+function countTotalBalls() {
+  let total = 0;
+  for (let i = 0; i < gBoard.length; i++) {
+    for (let j = 0; j < gBoard[0].length; j++) {
+      if (gBoard[i][j].gameElement === BALL) total++;
+    }
+  }
+  return total;
 }
 
 function buildBoard() {
@@ -98,6 +117,7 @@ function renderBoard(board) {
 
 // Move the player to a specific location
 function moveTo(i, j) {
+  if (!isGameActive) return;
   var targetCell = gBoard[i][j];
   if (targetCell.type === WALL) return;
 
@@ -112,6 +132,12 @@ function moveTo(i, j) {
   ) {
     if (targetCell.gameElement === BALL) {
       console.log("Collecting!");
+      gBallCount++;
+      updateBallCountDisplay();
+    }
+    if (gBallCount === gTotalBalls) {
+      showWinMessage();
+      isGameActive = false;
     }
 
     // MOVING from current position
@@ -166,6 +192,8 @@ function getClassName(location) {
 }
 
 function addBall() {
+  if (!isGameActive) return;
+  gTotalBalls++;
   const row = gBoard.length - 2;
   const column = gBoard[0].length - 2;
   const i = Math.floor(Math.random() * row + 1);
@@ -175,4 +203,22 @@ function addBall() {
     renderCell({ i, j }, BALL_IMG);
   }
 }
-setInterval(addBall, 4000);
+setInterval(addBall, 3000);
+
+function updateBallCountDisplay() {
+  var elBallCount = document.querySelector(".ball-count"); 
+  elBallCount.innerText = "Balls Collected: " + gBallCount; 
+}
+
+function showWinMessage() {
+  var elWinMessage = document.querySelector(".win-message");
+  elWinMessage.style.display = "block";
+}
+function hideWinMessage() {
+  var elWinMessage = document.querySelector(".win-message");
+  elWinMessage.style.display = "none"; 
+}
+
+function refreshGame() {
+  location.reload(); 
+}
